@@ -2,7 +2,7 @@
 
 aws ec2 run-instances \
 --region ap-south-1 \
---image-id ami-b46f48db \
+--image-id ami-05695932c5299858a \
 --count 1 \
 --instance-type t2.micro \
 --key-name SreeDemoKey \
