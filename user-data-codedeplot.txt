@@ -1,0 +1,12 @@
+#!/bin/sh
+
+aws s3 cp s3://aws-codedeploy-us-east-1/latest/install . --region ap-south-1
+chmod +x ./install
+sed -i "s/sleep(.*)/sleep(10)/" install 
+./install auto
+service codedeploy-agent status 
+
+yum -y install httpd php
+service httpd restart
+echo "<?php echo 1+2;" > /var/www/html/sree.php
+

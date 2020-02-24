@@ -1,0 +1,187 @@
+
+
+Roles
+	CodeDeploy  (EC2 SERVICE ROLE) Allows EC2 instances to call AWS services on your behalf.
+		Create Policy CodeDeploy
+			{
+			  "Version": "2012-10-17",
+			  "Statement": [
+			    {
+			      "Action": [
+			        "autoscaling:PutLifecycleHook",
+			        "autoscaling:DeleteLifecycleHook",
+			        "autoscaling:RecordLifecycleActionHeartbeat",
+			        "autoscaling:CompleteLifecycleAction",
+			        "autoscaling:DescribeAutoscalingGroups",
+			        "autoscaling:PutInstanceInStandby",
+			        "autoscaling:PutInstanceInService",
+			        "ec2:Describe*"
+			      ],
+			      "Effect": "Allow",
+			      "Resource": "*"
+			    }
+			  ]
+			}
+		REFRESH and ATTACH to the ROLE
+		EDIT TRUST RELATIONSHIP
+		{
+		  "Version": "2012-10-17",
+		  "Statement": [
+		    {
+		      "Sid": "",
+		      "Effect": "Allow",
+		      "Principal": {
+		        "Service": [
+		          "codedeploy.us-west-2.amazonaws.com",
+		          "codedeploy.us-east-1.amazonaws.com",
+		          "codedeploy.ap-south-1.amazonaws.com"
+		        ]
+		      },
+		      "Action": "sts:AssumeRole"
+		    }
+		  ]
+		}
+
+	EC2CodeDeploy Role
+		// Instance Role for EC2 Instance
+			{ 
+			    "Version": "2012-10-17", 
+			    "Statement": [   
+			      {     
+			          "Action": [       
+			              "s3:Get*",       
+			              "s3:List*"     
+			          ],     
+			          "Effect": "Allow",     
+			          "Resource": "*"   
+			      } 
+			    ]
+			}
+
+Create Instance Amazon AMI ami-b46f48db
+	EC2CodeDeploy Instance Profile
+
+
+
+cat  <<EOT > ./user-data-codedeplot.txt
+#!/bin/sh
+
+aws s3 cp s3://aws-codedeploy-us-east-1/latest/install . --region ap-south-1
+chmod +x ./install
+sed -i "s/sleep(.*)/sleep(10)/" install 
+./install auto
+service codedeploy-agent status 
+
+yum -y install httpd php
+service httpd restart
+echo "<?php echo 1+2;" > /var/www/html/sree.php
+
+EOT
+
+
+#--tag-specifications 'ResourceType=instance,Tags=[{Key=webserver,Value=production}]' 'ResourceType=volume,Tags=[{Key=cost-center,Value=cc123}]' 
+
+aws ec2 run-instances \
+--region ap-south-1 \
+--image-id ami-b46f48db \
+--count 1 \
+--instance-type t2.micro \
+--key-name SreeDemoKey \
+--user-data file://./user-data-codedeplot.txt \
+--iam-instance-profile Name=EC2CodeDeploy \
+--tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Demo-CodeDeploy-Prod}]' \
+--security-groups Sree-Demo-SG-All-IP-Open
+
+
+
+Login
+
+
+
+curl localhost/sree.php
+
+
+
+============
+yum -y update
+
+yum install -y aws-cli
+
+cd /home/ec2-user
+
+2.) Here you will setup your AWS access, secret, and region.
+
+aws configure 
+
+aws s3 cp s3://aws-codedeploy-us-east-1/latest/install . --region us-east-1
+aws s3 cp s3://aws-codedeploy-us-east-1/latest/install . --region ap-south-1
+
+chmod +x ./install
+
+3.) This is simply a quick hack to get the agent running faster.
+
+sed -i "s/sleep(.*)/sleep(10)/" install 
+
+./install auto
+
+4.) Verify it is running.
+
+service codedeploy-agent status 
+ The AWS CodeDeploy agent is running as PID 8252
+
+
+Install Apache and PHP
+
+Tag the instance uniquly
+
+https://github.com/schogini/opsworks.git
+
+Create CodeDeploy
+
+aws deploy push --application-name <MyAppName> \
+      --s3-location s3://<MyBucketName>/<MyNewAppBundleName> \
+      --source <PathToMyBundle>
+
+--s3-location bucket=string,key=string,bundleType=tar|tgz|zip,version=string,eTag=string
+
+--github-location repository=string,commitId=string
+
+
+
+aws deploy create-application --application-name demo-app
+
+SreeMacMin16GB:codedeploy sree$ aws deploy delete-application --application-name demo-app
+SreeMacMin16GB:codedeploy sree$ aws deploy --region ap-south-1 create-application --application-name demo-app
+{
+    "applicationId": "d7aacbb2-2dbe-4cb2-83a0-3cb548375ccd"
+}
+
+
+SreeMacMin16GB:codedeploy sree$ aws iam list-roles| grep CodeDeploy
+            "RoleName": "CodeDeploy",
+            "Arn": "arn:aws:iam::504881750319:role/CodeDeploy",
+            "RoleName": "EC2CodeDeploy",
+            "Arn": "arn:aws:iam::504881750319:role/EC2CodeDeploy",
+
+
+aws deploy --region ap-south-1 create-deployment-group --application-name demo-app --deployment-group-name dg2 \
+--service-role-arn arn:aws:iam::504881750319:role/CodeDeploy \
+--ec2-tag-filters Key=Name,Value=Demo-CodeDeploy-Prod,Type=KEY_AND_VALUE
+{
+    "deploymentGroupId": "8e25a661-215a-4bb8-9a3b-026ef2a51f38"
+}
+
+
+
+aws deploy --region ap-south-1 register-application-revision --application-name demo-app \
+--description "Revised Demo application" \
+--github-location repository=schogini/codedeploy,commitId=62f734f49007e93bdc7416d8f8f5588a0d545597
+
+
+aws deploy --region ap-south-1 create-deployment --application-name demo-app \
+--deployment-group-name dg2 \
+--github-location repository=schogini/codedeploy,commitId=62f734f49007e93bdc7416d8f8f5588a0d545597
+{
+    "deploymentId": "d-O888BCY6R"
+}
+
