@@ -1,12 +1,11 @@
 #!/bin/sh
-
 aws ec2 run-instances \
---region ap-south-1 \
---image-id ami-05695932c5299858a \
+--region us-east-1 \
+--image-id ami-0323c3dd2da7fb37d \
 --count 1 \
 --instance-type t2.micro \
---key-name Amit-Mumbai \
+--key-name virginia \
 --user-data file://./user-data-codedeplot.txt \
---iam-instance-profile Name=EC2CodeDeploy \
---tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Demo-CodeDeploy-Prod}]' \
---security-groups Sree-Demo-SG-All-IP-Open
+--iam-instance-profile Name=CodeDeployInstanceRole \
+--tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Amit-CodeDeploy-Prod}]' \
+--security-groups amitSG
