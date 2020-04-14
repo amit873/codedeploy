@@ -31,6 +31,6 @@ service httpd restart
 yum -y install php php-mysql php-devel php-gd php-pecl-memcache php-pspell php-snmp php-xmlrpc php-xml
 service httpd restart
 
-nano  /var/www/html/sree.php
+nano  /var/www/html/amit.php
 
 
