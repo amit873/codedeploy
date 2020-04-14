@@ -1,12 +1,13 @@
 #!/bin/sh
-
-aws s3 cp s3://aws-codedeploy-us-east-1/latest/install . --region us-east-1
+sudo yum update
+sudo yum install ruby
+sudo yum install wget
+cd /home/ec2-user
+wget https://bucket-name.s3.region-identifier.amazonaws.com/latest/install
 chmod +x ./install
-sed -i "s/sleep(.*)/sleep(10)/" install 
-./install auto
-service codedeploy-agent status 
+sudo ./install auto
+sudo service codedeploy-agent status
 
-yum -y install httpd php
-service httpd restart
+sudo yum -y install httpd php
+sudo service httpd restart
 echo "<?php echo 1+2;" > /var/www/html/amit.php
-
