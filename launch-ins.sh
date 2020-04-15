@@ -5,7 +5,7 @@ aws ec2 run-instances \
 --count 1 \
 --instance-type t2.micro \
 --key-name virginia \
---user-data file://./user-data-codedeplot.txt \
+--user-data file://./user-data-codedeploy.txt \
 --iam-instance-profile Name=CodeDeployInstanceRole \
 --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=Amit-CodeDeploy-Prod}]' \
 --security-groups amitSG
